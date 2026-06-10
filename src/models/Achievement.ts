@@ -13,7 +13,7 @@ export interface Achievement {
     category: AchievementCategory
     xpReward: number
     unlockedAt: string | null
-    condition: (stats: AchievementStats) => boolean
+
 }
 
 export interface AchievementStats {
