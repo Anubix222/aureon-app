@@ -50,10 +50,19 @@ export const useGameStore = create<GameState>()(
 
             completeRoutine: (routineId) =>
                 set((state) => {
-                    const routine = state.routines.find((r) => r.id === routineId);
-                    if (!routine || isCompletedToday(routine)) return state;
+
 
                     const today = new Date().toISOString().split('T')[0];
+
+                    //Reset automatico si cambio el dia
+                    const routinesAfterReset = state.lastOpenedAt !== today
+                        ? state.routines.map((r) => ({ ...r, completedAt: null }))
+                        : state.routines
+
+                    const routine = routinesAfterReset.find((r) => r.id === routineId);
+                    if (!routine || isCompletedToday(routine)) return state;
+
+
                     const updatedRoutines = state.routines.map((r) =>
                         r.id === routineId ? completeRoutineAction(r) : r
                     );
@@ -125,13 +134,26 @@ export const useGameStore = create<GameState>()(
             checkDailyReset: () =>
                 set((state) => {
                     const today = new Date().toISOString().split('T')[0];
-                    const resetted = resetRoutinesIfNewDay(state.routines, state.lastOpenedAt);
+
+                    //Prueba
+                    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0]
+                    const resetted = resetRoutinesIfNewDay(state.routines, yesterday);
                     return {
                         routines: resetted,
                         lastOpenedAt: today,
                     };
                 }),
         }),
-        { name: 'fitness-rpg-storage' }
+        {
+            name: 'fitness-rpg-storage',
+            partialize: (state) => ({
+                player: state.player,
+                routines: state.routines,
+                achievements: state.achievements,
+                lastOpenedAt: state.lastOpenedAt,
+                leveledUp: state.leveledUp,
+                newlyUnlockedAchievements: state.newlyUnlockedAchievements,
+            })
+        }
     )
 );
