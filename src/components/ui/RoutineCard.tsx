@@ -6,9 +6,14 @@ import { isCompletedToday } from "../../controllers/routineController";
 interface Props {
   routine: Routine;
   onComplete: () => void;
+  showComplete?: boolean;
 }
 
-const RoutineCard: React.FC<Props> = ({ routine, onComplete }) => {
+const RoutineCard: React.FC<Props> = ({
+  routine,
+  onComplete,
+  showComplete = true,
+}) => {
   const completed = isCompletedToday(routine);
 
   return (
@@ -26,17 +31,19 @@ const RoutineCard: React.FC<Props> = ({ routine, onComplete }) => {
         >
           {routine.name}
         </span>
-        <button
-          onClick={onComplete}
-          disabled={completed}
-          className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 ${
-            completed
-              ? "bg-zinc-700 text-zinc-500 cursor-not-allowed"
-              : "bg-amber-400 text-zinc-950 hover:bg-amber-300 cursor-pointer"
-          }`}
-        >
-          {completed ? "✓" : "○"}
-        </button>
+        {showComplete && (
+          <button
+            onClick={onComplete}
+            disabled={completed}
+            className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 ${
+              completed
+                ? "bg-zinc-700 text-zinc-500 cursor-not-allowed"
+                : "bg-amber-400 text-zinc-950 hover:bg-amber-300 cursor-pointer"
+            }`}
+          >
+            {completed ? "✓" : "○"}
+          </button>
+        )}
       </div>
 
       {/* Series y reps */}

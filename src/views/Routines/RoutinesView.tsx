@@ -14,7 +14,7 @@ import RoutineCard from "../../components/ui/RoutineCard";
 const ALL_BODY_PARTS = Object.keys(BODY_PART_LABELS) as BodyPart[];
 
 const RoutinesView: React.FC = () => {
-  const { routines, completeRoutine, addCustomRoutine } = useGameStore();
+  const { routines, addCustomRoutine } = useGameStore();
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState("");
   const [selectedParts, setSelectedParts] = useState<BodyPart[]>([]);
@@ -246,7 +246,8 @@ const RoutinesView: React.FC = () => {
               <RoutineCard
                 key={routine.id}
                 routine={routine}
-                onComplete={() => completeRoutine(routine.id)}
+                onComplete={() => {}}
+                showComplete={false}
               />
             ))}
           </div>
@@ -263,7 +264,8 @@ const RoutinesView: React.FC = () => {
               <RoutineCard
                 key={routine.id}
                 routine={routine}
-                onComplete={() => completeRoutine(routine.id)}
+                onComplete={() => {}}
+                showComplete={false}
               />
             ))}
           </div>
