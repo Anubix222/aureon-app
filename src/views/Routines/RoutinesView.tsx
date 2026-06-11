@@ -1,7 +1,12 @@
 /* eslint-disable react-hooks/static-components */
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useGameStore } from "../../store/useGameStore";
-import type { BodyPart } from "../../models/Routine";
+import {
+  type BodyPart,
+  type WeekDay,
+  TRAINING_DAYS,
+  WEEK_DAY_LABELS,
+} from "../../models/Routine";
 import { BODY_PART_LABELS } from "../../models/BodyPartXP";
 import { calculateXP } from "../../controllers/routineController";
 import RoutineCard from "../../components/ui/RoutineCard";
@@ -15,24 +20,43 @@ const RoutinesView: React.FC = () => {
   const [selectedParts, setSelectedParts] = useState<BodyPart[]>([]);
   const [sets, setSets] = useState(3);
   const [reps, setReps] = useState(10);
+  const [selectedDays, setSelectedDays] = useState<WeekDay[]>([]);
+
+  const todayDay = new Date().getDay() as WeekDay;
 
   const presetRoutines = routines.filter((r) => r.isPreset);
   const customRoutines = routines.filter((r) => !r.isPreset);
   const previewXP = calculateXP(selectedParts);
 
   const togglePart = (part: BodyPart) => {
+    if (part === "fullBody") {
+      setSelectedParts((prev) =>
+        prev.includes("fullBody") ? [] : ["fullBody"],
+      );
+      return;
+    }
+    if (selectedParts.includes("fullBody")) return;
+
     setSelectedParts((prev) =>
       prev.includes(part) ? prev.filter((p) => p !== part) : [...prev, part],
     );
   };
 
+  const toggleDay = (day: WeekDay) => {
+    setSelectedDays((prev) =>
+      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day],
+    );
+  };
+
   const handleCreate = () => {
-    if (!name.trim() || selectedParts.length === 0) return;
-    addCustomRoutine(name.trim(), selectedParts, sets, reps);
+    if (!name.trim() || selectedParts.length === 0 || selectedDays.length === 0)
+      return;
+    addCustomRoutine(name.trim(), selectedParts, sets, reps, selectedDays);
     setName("");
     setSelectedParts([]);
     setSets(3);
     setReps(10);
+    setSelectedDays([]);
     setShowForm(false);
   };
 
@@ -63,6 +87,20 @@ const RoutinesView: React.FC = () => {
     </div>
   );
 
+  const routinesByDay = TRAINING_DAYS.map((day) => ({
+    day,
+    label: WEEK_DAY_LABELS[day],
+    routines: presetRoutines.filter((r) => r.scheduledDays.includes(day)),
+  }));
+
+  const formRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (showForm && formRef.current) {
+      formRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [showForm]);
+
   return (
     <div className="min-h-screen bg-zinc-950 text-white p-6">
       {/* Header */}
@@ -78,8 +116,11 @@ const RoutinesView: React.FC = () => {
 
       {/* Formulario */}
       {showForm && (
-        <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-5 mb-8">
-          <h2 className="text-lg font-semibold mb-4">Nueva rutina</h2>
+        <div
+          ref={formRef}
+          className="bg-zinc-900 border border-zinc-700 rounded-2xl p-5 mb-8"
+        >
+          <h2 className="text-lg font-semibold mb-4">Nuevo ejercicio</h2>
 
           {/* Nombre */}
           <input
@@ -110,18 +151,53 @@ const RoutinesView: React.FC = () => {
 
           {/* Partes del cuerpo */}
           <p className="text-zinc-400 text-sm mb-3">Partes del cuerpo</p>
+
+          {selectedParts.includes("fullBody") && (
+            <p className="text-amber-400 text-xs mb-3 bg-amber-400/10 px-3 py-2 rounded-xl">
+              Full Body ya cubre todo el cuerpo. Deseleccionalo para elegir
+              partes específicas.
+            </p>
+          )}
+
           <div className="flex flex-wrap gap-2 mb-4">
-            {ALL_BODY_PARTS.map((part) => (
+            {ALL_BODY_PARTS.map((part) => {
+              const isSelected = selectedParts.includes(part);
+              const isDisabled =
+                selectedParts.includes("fullBody") && part !== "fullBody";
+
+              return (
+                <button
+                  key={part}
+                  onClick={() => togglePart(part)}
+                  disabled={isDisabled}
+                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                    isSelected
+                      ? "bg-amber-400 text-zinc-950"
+                      : isDisabled
+                        ? "bg-zinc-800 text-zinc-600 cursor-not-allowed opacity-40"
+                        : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"
+                  }`}
+                >
+                  {BODY_PART_LABELS[part]}
+                </button>
+              );
+            })}
+          </div>
+
+          {/*Días */}
+          <p className="text-zinc-400 text-sm mb-3">Días de entrenamiento</p>
+          <div className="flex flex-wrap gap-2 mb-4">
+            {TRAINING_DAYS.map((day) => (
               <button
-                key={part}
-                onClick={() => togglePart(part)}
+                key={day}
+                onClick={() => toggleDay(day)}
                 className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
-                  selectedParts.includes(part)
+                  selectedDays.includes(day)
                     ? "bg-amber-400 text-zinc-950"
                     : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"
                 }`}
               >
-                {BODY_PART_LABELS[part]}
+                {WEEK_DAY_LABELS[day]}
               </button>
             ))}
           </div>
@@ -136,32 +212,50 @@ const RoutinesView: React.FC = () => {
           {/* Botón crear */}
           <button
             onClick={handleCreate}
-            disabled={!name.trim() || selectedParts.length === 0}
+            disabled={
+              !name.trim() ||
+              selectedParts.length === 0 ||
+              selectedDays.length === 0
+            }
             className="w-full bg-amber-400 text-zinc-950 font-bold py-3 rounded-xl hover:bg-amber-300 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
           >
             Crear ejercicio
           </button>
         </div>
       )}
-
-      {/* Predefinidas */}
-      <h2 className="text-zinc-400 text-sm uppercase tracking-widest mb-3">
-        Ejercicios base
+      {/*Plan semanal predefinido */}
+      <h2 className="text-zinc-400 text-sm uppercase tracking-widest mb-4">
+        Plan semanal
       </h2>
-      <div className="flex flex-col gap-3 mb-8">
-        {presetRoutines.map((routine) => (
-          <RoutineCard
-            key={routine.id}
-            routine={routine}
-            onComplete={() => completeRoutine(routine.id)}
-          />
-        ))}
-      </div>
-
-      {/* Personalizadas */}
+      {routinesByDay.map(({ day, label, routines: dayRoutines }) => (
+        <div key={day} className="mb-6">
+          <div className="flex items-center gap-2 mb-3">
+            <span
+              className={`text-sm font-bold ${day === todayDay ? "text-amber-400" : "text-zinc-400"}`}
+            >
+              {label}
+            </span>
+            {day === todayDay && (
+              <span className="text-amber-400 text-xs bg-amber-400/10 px-2 py-0.5 rounded-full">
+                Hoy
+              </span>
+            )}
+          </div>
+          <div className="flex flex-col gap-3">
+            {dayRoutines.map((routine) => (
+              <RoutineCard
+                key={routine.id}
+                routine={routine}
+                onComplete={() => completeRoutine(routine.id)}
+              />
+            ))}
+          </div>
+        </div>
+      ))}
+      {/*Mis ejercicios */}
       {customRoutines.length > 0 && (
         <>
-          <h2 className="text-zinc-400 text-sm uppercase tracking-widest mb-3">
+          <h2 className="text-zinc-400 text-sm uppercase tracking-widest mb-4 mt-4">
             Mis ejercicios
           </h2>
           <div className="flex flex-col gap-3">

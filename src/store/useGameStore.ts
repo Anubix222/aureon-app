@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Player } from '../models/Player';
-import type { Routine, BodyPart } from '../models/Routine';
+import type { Routine, BodyPart, WeekDay } from '../models/Routine';
 import type { Achievement } from '../models/Achievement';
 import { addXP, didLevelUp, xpForLevel } from '../controllers/playerController';
 import { completeRoutine as completeRoutineAction, isCompletedToday, createCustomRoutine } from '../controllers/routineController';
@@ -20,7 +20,7 @@ interface GameState {
     newlyUnlockedAchievements: Achievement[];
 
     completeRoutine: (routineId: string) => void;
-    addCustomRoutine: (name: string, bodyParts: BodyPart[], sets: number, reps: number) => void;
+    addCustomRoutine: (name: string, bodyParts: BodyPart[], sets: number, reps: number, scheduledDays: WeekDay[]) => void;
     dismissLevelUp: () => void;
     checkDailyReset: () => void;
     dismissAchievement: (id: string) => void;
@@ -63,7 +63,7 @@ export const useGameStore = create<GameState>()(
                     if (!routine || isCompletedToday(routine)) return state;
 
 
-                    const updatedRoutines = state.routines.map((r) =>
+                    const updatedRoutines = routinesAfterReset.map((r) =>
                         r.id === routineId ? completeRoutineAction(r) : r
                     );
 
@@ -86,6 +86,7 @@ export const useGameStore = create<GameState>()(
 
                     return {
                         routines: updatedRoutines,
+                        lastOpenedAt: today,
                         player: finalPlayer,
                         leveledUp: didLevelUp(before, finalPlayer),
                         achievements: updatedAchievements,
@@ -96,9 +97,9 @@ export const useGameStore = create<GameState>()(
                     };
                 }),
 
-            addCustomRoutine: (name, bodyParts, sets, reps) =>
+            addCustomRoutine: (name, bodyParts, sets, reps, scheduledDays) =>
                 set((state) => {
-                    const newRoutine = createCustomRoutine(name, bodyParts, sets, reps);
+                    const newRoutine = createCustomRoutine(name, bodyParts, sets, reps, scheduledDays);
                     const updatedRoutines = [...state.routines, newRoutine];
 
                     // Verificar logros al crear rutina
@@ -135,9 +136,8 @@ export const useGameStore = create<GameState>()(
                 set((state) => {
                     const today = new Date().toISOString().split('T')[0];
 
-                    //Prueba
-                    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0]
-                    const resetted = resetRoutinesIfNewDay(state.routines, yesterday);
+
+                    const resetted = resetRoutinesIfNewDay(state.routines, state.lastOpenedAt);
                     return {
                         routines: resetted,
                         lastOpenedAt: today,

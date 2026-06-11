@@ -2,6 +2,7 @@ import type { Routine } from "../models/Routine";
 import { calculateXP } from "../controllers/routineController";
 
 export const PRESET_ROUTINES: Routine[] = [
+    // LUNES - Pecho y Brazos
     {
         id: 'preset-1',
         name: 'Flexiones',
@@ -11,9 +12,23 @@ export const PRESET_ROUTINES: Routine[] = [
         xp: calculateXP(['chest', 'arms']),
         isPreset: true,
         completedAt: null,
+        scheduledDays: [1],
     },
     {
         id: 'preset-2',
+        name: 'Fondos entre sillas',
+        bodyParts: ['chest', 'arms'],
+        sets: 3,
+        reps: 10,
+        xp: calculateXP(['chest', 'arms']),
+        isPreset: true,
+        completedAt: null,
+        scheduledDays: [1],
+    },
+
+    // MIÉRCOLES - Core y Piernas
+    {
+        id: 'preset-3',
         name: 'Sentadillas',
         bodyParts: ['legs'],
         sets: 4,
@@ -21,9 +36,10 @@ export const PRESET_ROUTINES: Routine[] = [
         xp: calculateXP(['legs']),
         isPreset: true,
         completedAt: null,
+        scheduledDays: [3],
     },
     {
-        id: 'preset-3',
+        id: 'preset-4',
         name: 'Plancha',
         bodyParts: ['core'],
         sets: 3,
@@ -31,27 +47,21 @@ export const PRESET_ROUTINES: Routine[] = [
         xp: calculateXP(['core']),
         isPreset: true,
         completedAt: null,
-    },
-    {
-        id: 'preset-4',
-        name: 'Burpees',
-        bodyParts: ['fullBody'],
-        sets: 3,
-        reps: 10,
-        xp: calculateXP(['fullBody']),
-        isPreset: true,
-        completedAt: null,
+        scheduledDays: [3],
     },
     {
         id: 'preset-5',
-        name: 'Jumping Jacks',
-        bodyParts: ['cardio'],
+        name: 'Zancadas',
+        bodyParts: ['legs'],
         sets: 3,
-        reps: 30,
-        xp: calculateXP(['cardio']),
+        reps: 12,
+        xp: calculateXP(['legs']),
         isPreset: true,
         completedAt: null,
+        scheduledDays: [3],
     },
+
+    // VIERNES - Espalda y Hombros
     {
         id: 'preset-6',
         name: 'Superman',
@@ -61,6 +71,7 @@ export const PRESET_ROUTINES: Routine[] = [
         xp: calculateXP(['back']),
         isPreset: true,
         completedAt: null,
+        scheduledDays: [5],
     },
     {
         id: 'preset-7',
@@ -71,15 +82,41 @@ export const PRESET_ROUTINES: Routine[] = [
         xp: calculateXP(['shoulders']),
         isPreset: true,
         completedAt: null,
+        scheduledDays: [5],
     },
     {
         id: 'preset-8',
-        name: 'Zancadas',
-        bodyParts: ['legs'],
+        name: 'Remo con mochila',
+        bodyParts: ['back'],
         sets: 3,
         reps: 12,
-        xp: calculateXP(['legs']),
+        xp: calculateXP(['back']),
         isPreset: true,
         completedAt: null,
+        scheduledDays: [5],
+    },
+
+    // SÁBADO - Full Body y Cardio
+    {
+        id: 'preset-9',
+        name: 'Burpees',
+        bodyParts: ['fullBody'],
+        sets: 3,
+        reps: 10,
+        xp: calculateXP(['fullBody']),
+        isPreset: true,
+        completedAt: null,
+        scheduledDays: [6],
+    },
+    {
+        id: 'preset-10',
+        name: 'Jumping Jacks',
+        bodyParts: ['cardio'],
+        sets: 3,
+        reps: 30,
+        xp: calculateXP(['cardio']),
+        isPreset: true,
+        completedAt: null,
+        scheduledDays: [6],
     },
 ];

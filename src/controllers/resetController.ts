@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { Routine } from "../models/Routine";
 
 export const resetRoutinesIfNewDay = (
@@ -8,5 +9,14 @@ export const resetRoutinesIfNewDay = (
     const today = new Date().toISOString().split('T')[0]
     if (lastOpenedAt === today) return routines
 
-    return routines.map((r) => ({ ...r, completedAt: null }))
+    //solo resetea las rutinas del dia actual
+    const todayDay = new Date().getDay()
+    return routines.map((r) => {
+        if (r.scheduledDays.includes(todayDay as any)) {
+            return { ...r, completedAt: null }
+        }
+        return r
+    })
+
+
 }

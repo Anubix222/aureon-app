@@ -1,4 +1,4 @@
-import type { Routine, BodyPart } from "../models/Routine";
+import type { Routine, BodyPart, WeekDay } from "../models/Routine";
 import { BODY_PART_XP } from "../models/BodyPartXP";
 
 export const calculateXP = (bodyParts: BodyPart[]): number => {
@@ -21,7 +21,8 @@ export const createCustomRoutine = (
     name: string,
     bodyParts: BodyPart[],
     sets: number,
-    reps: number
+    reps: number,
+    scheduledDays: WeekDay[],
 ): Routine => ({
     id: crypto.randomUUID(),
     name,
@@ -31,4 +32,5 @@ export const createCustomRoutine = (
     xp: calculateXP(bodyParts),
     isPreset: false,
     completedAt: null,
+    scheduledDays,
 })

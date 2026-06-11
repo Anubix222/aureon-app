@@ -1,14 +1,26 @@
 import React from "react";
 import { useGameStore } from "../../store/useGameStore";
 import RoutineCard from "../../components/ui/RoutineCard";
+import {
+  TRAINING_DAYS,
+  REST_DAYS,
+  type WeekDay,
+  WEEK_DAY_LABELS,
+} from "../../models/Routine";
 
 const DashboardView: React.FC = () => {
   const { player, routines, completeRoutine } = useGameStore();
 
+  const todayDay = new Date().getDay() as WeekDay;
   const today = new Date().toISOString().split("T")[0];
+  const isRestDay = REST_DAYS.includes(todayDay);
+
+  const todayRoutines = routines.filter((r) =>
+    r.scheduledDays.includes(todayDay),
+  );
 
   const completedToday = routines.filter((r) => r.completedAt === today);
-  const pending = routines.filter((r) => r.completedAt !== today);
+  const pending = todayRoutines.filter((r) => r.completedAt !== today);
 
   const xpPercent = Math.floor((player.currentXP / player.xpToNextLevel) * 100);
 
@@ -31,7 +43,7 @@ const DashboardView: React.FC = () => {
               {player.streak} días de racha
             </p>
             <p className="text-zinc-500 text-xs">
-              Se permite 1 día de descanso
+              Los días de descanso no rompen la racha
             </p>
           </div>
         </div>
@@ -68,38 +80,58 @@ const DashboardView: React.FC = () => {
         </div>
       </div>
 
-      {/*Resumen del dia */}
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-semibold ">Rutinas de hoy</h2>
-        <span className="text-zinc-400 text-sm">
-          {completedToday.length}/{routines.length} completadas
-        </span>
-      </div>
-
-      {/*Lista de pendientes */}
-      <div className="flex flex-col gap-3 mb-6">
-        {pending.map((routine) => (
-          <RoutineCard
-            key={routine.id}
-            routine={routine}
-            onComplete={() => completeRoutine(routine.id)}
-          />
-        ))}
-      </div>
-
-      {/*Lista completadas */}
-      {completedToday.length > 0 && (
+      {/*Dñia de descanso */}
+      {isRestDay ? (
+        <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 text-center">
+          <span className="text-4xl mb-3 block">😴</span>
+          <h2 className="text-white font-bold text-lg mb-1">Día de descanso</h2>
+          <p className="text-zinc-400 text-sm">
+            Hoy toca recuperarse. Vuleves a entrenar el{" "}
+            <span className="text-amber-400 font-semibold">
+              {
+                WEEK_DAY_LABELS[
+                  TRAINING_DAYS.find((d) => d > todayDay) ?? TRAINING_DAYS[0]
+                ]
+              }
+            </span>
+          </p>
+        </div>
+      ) : (
         <>
-          <p className="text-zinc-500 text-sm mb-3">Completadas</p>
-          <div className="flex flex-col gap-3">
-            {completedToday.map((routine) => (
+          {/*Resumen del dia */}
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-semibold ">Rutinas de hoy</h2>
+            <span className="text-zinc-400 text-sm">
+              {completedToday.length}/{routines.length} completadas
+            </span>
+          </div>
+
+          {/*Lista de pendientes */}
+          <div className="flex flex-col gap-3 mb-6">
+            {pending.map((routine) => (
               <RoutineCard
                 key={routine.id}
                 routine={routine}
-                onComplete={() => {}}
+                onComplete={() => completeRoutine(routine.id)}
               />
             ))}
           </div>
+
+          {/*Lista completadas */}
+          {completedToday.length > 0 && (
+            <>
+              <p className="text-zinc-500 text-sm mb-3">Completadas</p>
+              <div className="flex flex-col gap-3">
+                {completedToday.map((routine) => (
+                  <RoutineCard
+                    key={routine.id}
+                    routine={routine}
+                    onComplete={() => {}}
+                  />
+                ))}
+              </div>
+            </>
+          )}
         </>
       )}
     </div>
